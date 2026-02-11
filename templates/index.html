@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Transcription Tool - ASU</title>
+    <style>
+        /* ASU Brand Colors: Maroon #8C1D40, Gold #FFC627 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, "Helvetica Neue", sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #8C1D40;
+            border-bottom: 4px solid #FFC627;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #8C1D40;
+        }
+
+        .tab.active {
+            color: #8C1D40;
+            border-bottom-color: #FFC627;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #8C1D40;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #8C1D40;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6d1632;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .btn-secondary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #FFF9E6;
+            border-left: 4px solid #FFC627;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #8C1D40;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8C1D40;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #FFF9E6;
+            border-radius: 5px;
+            border-left: 4px solid #8C1D40;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .results h2 {
+            color: #8C1D40;
+            margin-bottom: 15px;
+        }
+
+        .download-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .download-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #8C1D40;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .download-link:hover {
+            background: #6d1632;
+        }
+
+        .error {
+            display: none;
+            padding: 15px;
+            background: #fee;
+            border-left: 4px solid #d00;
+            border-radius: 5px;
+            color: #d00;
+            margin-top: 20px;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+
+            .tab.active {
+                border-left-color: #FFC627;
+                border-bottom-color: transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Transcription Tool</h1>
+
+        <div class="info-box">
+            <h3>Features</h3>
+            <ul>
+                <li>Transcribe video/audio files using AI (OpenAI Whisper)</li>
+                <li>Download transcripts from YouTube videos</li>
+                <li>Convert existing transcripts to accessible HTML format</li>
+                <li>Export in multiple formats: TXT, SRT, VTT, HTML</li>
+            </ul>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="upload">Upload Video</button>
+            <button class="tab" data-tab="youtube">YouTube URL</button>
+            <button class="tab" data-tab="convert">Convert Transcript</button>
+        </div>
+
+        <!-- Upload Video Tab -->
+        <div class="tab-content active" id="upload">
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="videoFile">Select Video or Audio File</label>
+                    <input type="file" id="videoFile" name="video" accept=".mp4,.avi,.mov,.mkv,.flv,.wmv,.webm,.mp3,.wav,.aac,.m4a,.flac,.ogg" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="modelSize">Transcription Model</label>
+                    <select id="modelSize" name="model_size">
+                        <option value="tiny">Tiny (Fast, less accurate)</option>
+                        <option value="base" selected>Base (Balanced)</option>
+                        <option value="small">Small (Better accuracy)</option>
+                        <option value="medium">Medium (High accuracy, slower)</option>
+                        <option value="large">Large (Best accuracy, slowest)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language" name="language">
+                        <option value="auto" selected>Auto-detect</option>
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="uploadBtn">Transcribe Video</button>
+            </form>
+        </div>
+
+        <!-- YouTube URL Tab -->
+        <div class="tab-content" id="youtube">
+            <form id="youtubeForm">
+                <div class="form-group">
+                    <label for="youtubeUrl">YouTube Video URL</label>
+                    <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="youtubeModelSize">Transcription Model</label>
+                    <select id="youtubeModelSize" name="model_size">
+                        <option value="tiny">Tiny (Fast, less accurate)</option>
+                        <option value="base" selected>Base (Balanced)</option>
+                        <option value="small">Small (Better accuracy)</option>
+                        <option value="medium">Medium (High accuracy, slower)</option>
+                        <option value="large">Large (Best accuracy, slowest)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="youtubeLanguage">Language</label>
+                    <select id="youtubeLanguage" name="language">
+                        <option value="auto" selected>Auto-detect</option>
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="youtubeBtn">Transcribe YouTube Video</button>
+            </form>
+        </div>
+
+        <!-- Convert Transcript Tab -->
+        <div class="tab-content" id="convert">
+            <form id="convertForm">
+                <div class="form-group">
+                    <label for="transcriptFile">Select Transcript File</label>
+                    <input type="file" id="transcriptFile" name="transcript" accept=".txt,.srt,.vtt" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="videoTitle">Video Title (Optional)</label>
+                    <input type="text" id="videoTitle" name="videoTitle" placeholder="Enter the video title">
+                </div>
+
+                <div class="form-group">
+                    <label for="videoUrl">Video URL (Optional)</label>
+                    <input type="text" id="videoUrl" name="videoUrl" placeholder="Enter the video URL (e.g., https://youtube.com/watch?v=...)">
+                </div>
+
+                <div class="form-group">
+                    <label for="videoAuthor">Video Author (Optional)</label>
+                    <input type="text" id="videoAuthor" name="videoAuthor" placeholder="Enter the video author/creator name">
+                </div>
+
+                <div class="info-box">
+                    <h3>Supported Formats</h3>
+                    <ul>
+                        <li><strong>TXT:</strong> Plain text transcript</li>
+                        <li><strong>SRT:</strong> SubRip subtitle format</li>
+                        <li><strong>VTT:</strong> WebVTT subtitle format</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="convertBtn">Convert to HTML</button>
+            </form>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Processing your request...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="error"></div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+            <h2>Transcription Complete!</h2>
+            <p id="resultMessage"></p>
+
+            <div class="preview" id="preview"></div>
+
+            <div class="download-links" id="downloadLinks"></div>
+
+            <button class="btn btn-secondary" id="editBtn" style="margin-top: 20px; display: none;">Edit Transcript</button>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; padding: 20px; overflow-y: auto;">
+            <div style="background: white; max-width: 900px; margin: 40px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <h2 style="color: #8C1D40; margin-top: 0;">Edit Transcript</h2>
+                <p style="color: #666; margin-bottom: 20px;">Make your changes below, then click "Save & Regenerate" to create updated files.</p>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="editTextarea" style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Transcript Text:</label>
+                    <textarea id="editTextarea" style="width: 100%; min-height: 400px; padding: 15px; border: 2px solid #ddd; border-radius: 5px; font-family: monospace; font-size: 14px; line-height: 1.6; resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" id="saveEditBtn">Save & Regenerate</button>
+                    <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                </div>
+
+                <div class="loading" id="editLoading" style="display: none; margin-top: 20px;">
+                    <div class="spinner"></div>
+                    <p>Regenerating transcript files...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store current transcript data
+        let currentTranscriptData = null;
+        let currentFullText = '';
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+
+                // Hide results and errors
+                hideResults();
+                hideError();
+            });
+        });
+
+        // Helper functions
+        function showLoading(message = 'Processing your request...') {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('loadingMessage').textContent = message;
+            hideResults();
+            hideError();
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            hideLoading();
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('active');
+        }
+
+        function showResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const downloadLinksDiv = document.getElementById('downloadLinks');
+            const previewDiv = document.getElementById('preview');
+            const messageP = document.getElementById('resultMessage');
+
+            // Clear previous results
+            downloadLinksDiv.innerHTML = '';
+            previewDiv.innerHTML = '';
+
+            // Set message
+            if (data.title) {
+                messageP.textContent = `Video: ${data.title}`;
+            } else {
+                messageP.textContent = 'Your transcript is ready!';
+            }
+
+            // Show preview
+            if (data.text) {
+                previewDiv.textContent = data.text;
+            }
+
+            // Add download links
+            if (data.files) {
+                for (const [format, filename] of Object.entries(data.files)) {
+                    const link = document.createElement('a');
+                    link.href = `/download/${filename}`;
+                    link.className = 'download-link';
+                    link.textContent = `Download ${format.toUpperCase()}`;
+                    downloadLinksDiv.appendChild(link);
+
+                    // Add view button for HTML
+                    if (format === 'html') {
+                        const viewLink = document.createElement('a');
+                        viewLink.href = `/view/${filename}`;
+                        viewLink.className = 'download-link';
+                        viewLink.textContent = 'View HTML';
+                        viewLink.target = '_blank';
+                        downloadLinksDiv.appendChild(viewLink);
+                    }
+                }
+            } else if (data.html_file) {
+                // Convert transcript result
+                const downloadLink = document.createElement('a');
+                downloadLink.href = `/download/${data.html_file}`;
+                downloadLink.className = 'download-link';
+                downloadLink.textContent = 'Download HTML';
+                downloadLinksDiv.appendChild(downloadLink);
+
+                const viewLink = document.createElement('a');
+                viewLink.href = `/view/${data.html_file}`;
+                viewLink.className = 'download-link';
+                viewLink.textContent = 'View HTML';
+                viewLink.target = '_blank';
+                downloadLinksDiv.appendChild(viewLink);
+            }
+
+            // Store data for editing
+            currentTranscriptData = data;
+            currentFullText = data.text || '';
+
+            // Show edit button
+            const editBtn = document.getElementById('editBtn');
+            editBtn.style.display = 'inline-block';
+
+            resultsDiv.classList.add('active');
+            hideLoading();
+        }
+
+        function hideResults() {
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('editBtn').style.display = 'none';
+        }
+
+        // Upload video form
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            showLoading('Transcribing video... This may take a few minutes.');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            } catch (error) {
+                showError('An error occurred: ' + error.message);
+            }
+        });
+
+        // YouTube form
+        document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const url = document.getElementById('youtubeUrl').value;
+            const modelSize = document.getElementById('youtubeModelSize').value;
+            const language = document.getElementById('youtubeLanguage').value;
+
+            showLoading('Downloading and transcribing YouTube video... This may take several minutes.');
+
+            try {
+                const response = await fetch('/youtube', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        model_size: modelSize,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            } catch (error) {
+                showError('An error occurred: ' + error.message);
+            }
+        });
+
+        // Convert transcript form
+        document.getElementById('convertForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            showLoading('Converting transcript to HTML...');
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            } catch (error) {
+                showError('An error occurred: ' + error.message);
+            }
+        });
+
+        // Edit transcript functionality
+        const editBtn = document.getElementById('editBtn');
+        const editModal = document.getElementById('editModal');
+        const editTextarea = document.getElementById('editTextarea');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editLoading = document.getElementById('editLoading');
+
+        editBtn.addEventListener('click', () => {
+            // Populate textarea with current transcript
+            editTextarea.value = currentFullText;
+            editModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close modal when clicking outside
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        saveEditBtn.addEventListener('click', async () => {
+            const editedText = editTextarea.value;
+
+            if (!editedText.trim()) {
+                alert('Transcript cannot be empty!');
+                return;
+            }
+
+            editLoading.style.display = 'block';
+            saveEditBtn.disabled = true;
+            cancelEditBtn.disabled = true;
+
+            try {
+                const response = await fetch('/edit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: editedText,
+                        title: currentTranscriptData.title || 'Edited Transcript',
+                        video_url: currentTranscriptData.video_url,
+                        video_author: currentTranscriptData.video_author
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    // Update the current data
+                    currentFullText = editedText;
+                    currentTranscriptData = data;
+
+                    // Close modal
+                    editModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+
+                    // Show updated results
+                    showResults(data);
+                }
+            } catch (error) {
+                showError('Failed to save edits: ' + error.message);
+            } finally {
+                editLoading.style.display = 'none';
+                saveEditBtn.disabled = false;
+                cancelEditBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

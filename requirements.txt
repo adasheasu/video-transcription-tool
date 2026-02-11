@@ -1,0 +1,19 @@
+# Video Transcription Tool - Python Dependencies
+
+# Web Framework
+Flask>=3.0.0
+Werkzeug>=3.0.1
+
+# AI/ML - Whisper for transcription (use git version for Python 3.14 compatibility)
+git+https://github.com/openai/whisper.git
+torch>=2.1.0
+torchaudio>=2.1.0
+
+# YouTube downloading
+yt-dlp>=2024.3.10
+
+# Audio/Video processing
+ffmpeg-python>=0.2.0
+
+# Utilities
+python-dotenv>=1.0.0

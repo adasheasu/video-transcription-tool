@@ -115,7 +115,8 @@ def upload_file():
         return jsonify({
             'success': True,
             'files': output_files,
-            'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text']
+            'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text'],
+            'full_text': result['text']
         })
 
     except Exception as e:
@@ -203,6 +204,7 @@ def transcribe_youtube():
                 'files': output_files,
                 'title': caption_result['title'],
                 'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text'],
+                'full_text': result['text'],
                 'source': 'captions'
             })
 
@@ -240,6 +242,7 @@ def transcribe_youtube():
             'files': output_files,
             'title': download_result['title'],
             'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text'],
+            'full_text': result['text'],
             'source': 'whisper'
         })
 
@@ -307,7 +310,8 @@ def convert_transcript():
         return jsonify({
             'success': True,
             'html_file': os.path.basename(html_path),
-            'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text']
+            'text': result['text'][:500] + '...' if len(result['text']) > 500 else result['text'],
+            'full_text': result['text']
         })
 
     except Exception as e:
@@ -383,7 +387,8 @@ def edit_transcript():
             'success': True,
             'files': output_files,
             'title': title,
-            'text': edited_text[:500] + '...' if len(edited_text) > 500 else edited_text
+            'text': edited_text[:500] + '...' if len(edited_text) > 500 else edited_text,
+            'full_text': edited_text
         })
 
     except Exception as e:

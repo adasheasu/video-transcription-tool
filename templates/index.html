@@ -553,7 +553,7 @@
 
             // Store data for editing
             currentTranscriptData = data;
-            currentFullText = data.text || '';
+            currentFullText = data.full_text || data.text || '';
 
             // Show edit button
             const editBtn = document.getElementById('editBtn');
